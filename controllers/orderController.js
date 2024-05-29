@@ -179,6 +179,10 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
     session,
   });
 });
+const createCartOrder = (session) => {
+  const cartId = session.client_reference_id;
+  const shippingAddress = session.metadata;
+};
 exports.webhookCheckout = asyncHandler(async (req, res) => {
   const sig = req.headers["stripe-signature"];
 
@@ -196,8 +200,9 @@ exports.webhookCheckout = asyncHandler(async (req, res) => {
 
   // Handle the event
   if (event.type === "checkout.session.completed") {
-    console.log("create order here......");
     console.log(event.data.object.client_reference_id);
+    // create order
+    // createCartOrder(event.data)
   }
   // Return a 200 response to acknowledge receipt of the event
   res.send();
