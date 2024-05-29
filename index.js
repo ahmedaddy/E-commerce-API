@@ -32,6 +32,7 @@ const dbConnection = require("./config/database");
 
 // Mount Routers ==================================================>
 const mountRoutes = require("./Routes/index");
+const { webhookCheckout } = require("./controllers/orderController");
 
 dbConnection();
 
@@ -41,6 +42,13 @@ const app = express();
 app.use(cors());
 
 app.use(compression());
+
+// checkout webhook
+app.post(
+  "/webhook-checkout",
+  express.raw({ type: "application/json" }),
+  webhookCheckout
+);
 
 // MiddelWare
 app.use(express.json());
