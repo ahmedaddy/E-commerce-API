@@ -6,6 +6,7 @@ const Factory = require("./handlersFactory");
 const ApiError = require("../utils/apiError");
 
 const Cart = require("../models/cartModel");
+const User = require("../models/userModel");
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 
@@ -38,6 +39,7 @@ exports.createCashOrder = asyncHandler(async (req, res, next) => {
     shippingAddress: req.body.shippingAddress,
     totalOrderPrice,
   });
+
   // 4 - after creating order, decrement product quantity and increment product sold
   if (order) {
     const bulkOption = cart.cartItems.map((item) => ({
@@ -179,10 +181,49 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
     session,
   });
 });
-const createCartOrder = (session) => {
+
+const createCartOrder = async (session) => {
   const cartId = session.client_reference_id;
   const shippingAddress = session.metadata;
+  const orderPrice = session.amount_total / 100;
+
+  const cart = await Cart.findById(cartId);
+  const user = await User.findById({ email: session.customer_email });
+
+  // create order
+  // 3 - create order with cash payment method (default)
+  const order = await Order.create({
+    user: user._id,
+    cartItems: cart.cartItems,
+    shippingAddress,
+    totalOrderPrice: orderPrice,
+    isPaid: true,
+    paidAt: Date.now(),
+    paymentMethodType: "card",
+  });
+
+  // 4 - after creating order, decrement product quantity and increment product sold
+  if (order) {
+    const bulkOption = cart.cartItems.map((item) => ({
+      updateOne: {
+        filter: {
+          _id: item.product,
+        },
+        update: {
+          $inc: {
+            quantity: -item.quantity,
+            sold: +item.quantity,
+          },
+        },
+      },
+    }));
+    await Product.bulkWrite(bulkOption, {});
+    // 5 - clear cart depend on cartId
+
+    await Cart.findByIdAndDelete(cartId);
+  }
 };
+
 exports.webhookCheckout = asyncHandler(async (req, res) => {
   const sig = req.headers["stripe-signature"];
 
@@ -202,8 +243,10 @@ exports.webhookCheckout = asyncHandler(async (req, res) => {
   if (event.type === "checkout.session.completed") {
     console.log(event.data.object.client_reference_id);
     // create order
-    // createCartOrder(event.data)
+    createCartOrder(event.data.object);
   }
   // Return a 200 response to acknowledge receipt of the event
-  res.send();
+  res.status(200).json({
+    received: true,
+  });
 });
