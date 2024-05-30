@@ -182,6 +182,9 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc      This webhook will run when stripe payment success paid
+// @route     GET  /checkout-session
+// @Access    Private - User
 const createCartOrder = async (session) => {
   const cartId = session.client_reference_id;
   const shippingAddress = session.metadata;
@@ -241,9 +244,8 @@ exports.webhookCheckout = asyncHandler(async (req, res) => {
 
   // Handle the event
   if (event.type === "checkout.session.completed") {
-    console.log(event.data.object.client_reference_id);
     // create order
-    createCartOrder(event.data.object);
+    createCartOrder(event.data);
   }
   // Return a 200 response to acknowledge receipt of the event
   res.status(200).json({
