@@ -209,15 +209,8 @@ const createCartOrder = async (session) => {
   if (order) {
     const bulkOption = cart.cartItems.map((item) => ({
       updateOne: {
-        filter: {
-          _id: item.product,
-        },
-        update: {
-          $inc: {
-            quantity: -item.quantity,
-            sold: +item.quantity,
-          },
-        },
+        filter: { _id: item.product },
+        update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
       },
     }));
     await Product.bulkWrite(bulkOption, {});
@@ -245,7 +238,7 @@ exports.webhookCheckout = asyncHandler(async (req, res) => {
   // Handle the event
   if (event.type === "checkout.session.completed") {
     // create order
-    createCartOrder(event.data);
+    createCartOrder(event.data.object);
   }
   // Return a 200 response to acknowledge receipt of the event
   res.status(200).json({
