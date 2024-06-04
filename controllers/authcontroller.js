@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs/dist/bcrypt");
+const bcrypt = require("bcryptjs");
 
 const asyncHandler = require("express-async-handler");
 // const nodemailer = require("nodemailer");
@@ -10,6 +10,7 @@ const sendEmail = require("../utils/sendEmail");
 
 const userModel = require("../models/userModel");
 const generateToken = require("../utils/createToken");
+const { sanitizeUser } = require("../utils/sanatizeData");
 
 // @Desc      signUp
 // @route     /api/v1/auth/signup
@@ -24,7 +25,7 @@ exports.signUp = asyncHandler(async (req, res, next) => {
   // 2 - generate json web token (jwt)
   const token = generateToken(user._id);
 
-  res.status(201).json({ data: user, token });
+  res.status(201).json({ data: sanitizeUser(user), token });
 });
 
 // @Desc      login
@@ -41,7 +42,7 @@ exports.login = asyncHandler(async (req, res, next) => {
   // 3) generate token
   const token = generateToken(user._id);
   // 4) send response to client side
-  res.status(200).json({ data: user, token });
+  res.status(200).json({ data: sanitizeUser(user), token });
 });
 
 exports.protect = asyncHandler(async (req, res, next) => {

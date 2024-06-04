@@ -115,6 +115,4 @@ productSchema.post("save", (doc) => {
   setImageURL(doc);
 });
 
-
-
 module.exports = mongoose.model("Product", productSchema);

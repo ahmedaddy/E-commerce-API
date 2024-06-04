@@ -1,4 +1,6 @@
 const express = require("express");
+const accountCreationLimiter = require("../utils/rateLimiter");
+
 const {
   signupValidator,
   loginValidator,
@@ -17,8 +19,12 @@ const router = express.Router();
 router.route("/signup").post(signupValidator, signUp);
 router.route("/login").post(loginValidator, login);
 
-router.route("/forgotPassword").post(forgotPassword);
-router.route("/verifyResetCode").post(verifyPassResetCode);
-router.route("/resetPassword").put(resetPassword);
+router.use(accountCreationLimiter);
+
+router.route("/forgotPassword").post(accountCreationLimiter, forgotPassword);
+router
+  .route("/verifyResetCode")
+  .post(accountCreationLimiter, verifyPassResetCode);
+router.route("/resetPassword").put(accountCreationLimiter, resetPassword);
 
 module.exports = router;

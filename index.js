@@ -9,6 +9,16 @@ const cors = require("cors");
 // eslint-disable-next-line import/no-extraneous-dependencies
 const compression = require("compression");
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+const hpp = require("hpp");
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+const mongoSanitize = require("express-mongo-sanitize");
+// eslint-disable-next-line import/no-extraneous-dependencies
+const xss = require("xss-clean");
+// eslint-disable-next-line import/no-extraneous-dependencies
+const helmet = require("helmet");
+
 // Load environment variables from config.env file
 dotenv.config({ path: "./config.env" });
 
@@ -37,7 +47,7 @@ const { webhookCheckout } = require("./controllers/orderController");
 dbConnection();
 
 const app = express();
-
+app.use(helmet());
 // enable outher domains to access your application
 app.use(cors());
 
@@ -58,6 +68,25 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
   console.log(`Mode: ${process.env.NODE_ENV} `);
 }
+
+// This module searches for any keys in objects that begin with a $ sign or contain a ., from req.body, req.query or req.params. It can then either:
+app.use(mongoSanitize());
+
+// This will sanitize any data in req.body, req.query, and req.params. You can also access the API directly if you don't want to use as middleware.
+app.use(xss());
+
+// middleware to protect against HTTP Parameter Pollution attacks
+app.use(
+  hpp({
+    whitelist: [
+      "price",
+      "sold",
+      "quantity",
+      "ratingsAverage",
+      "ratingsQuantity",
+    ],
+  })
+);
 
 // Mount Routes
 mountRoutes(app);
