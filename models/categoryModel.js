@@ -18,6 +18,13 @@ const categorysSchema = new mongoose.Schema(
 
   { timestamps: true }
 );
+
+// Automatically populate 'relatedField'
+categorysSchema.pre(/^find/, function (next) {
+  this.populate("_id");
+  next();
+});
+
 const setImageURL = (doc) => {
   // return image base url + image name
   if (doc.image) {
@@ -25,6 +32,7 @@ const setImageURL = (doc) => {
     doc.image = imgURL;
   }
 };
+
 // findone, findall and update
 categorysSchema.post("init", (doc) => {
   setImageURL(doc);

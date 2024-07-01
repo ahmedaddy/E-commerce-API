@@ -18,6 +18,7 @@ const cartShema = new mongoose.Schema(
     ],
     totalCartPrice: Number,
     totalPriceAfterDiscount: Number,
+    coupon: String,
     user: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
@@ -25,4 +26,10 @@ const cartShema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+cartShema.pre(/^find/, function (next) {
+  this.populate("cartItems.product");
+  next();
+});
+
 module.exports = mongoose.model("Cart", cartShema);

@@ -29,36 +29,45 @@ exports.uploadProductImages = uploadMixOfImages([
 exports.resizeProductImages = asyncHandler(async (req, res, next) => {
   // console.log(req.files);
   // 1) image proccesing for image cover
-  if (req.files.imageCover) {
-    const imageCoverFilename = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
+  try {
+    if (req.files && req.files.imageCover) {
+      // Process image cover
+      const imageCoverFilename = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
 
-    await sharp(req.files.imageCover[0].buffer)
-      .resize(2000, 1333)
-      .toFormat("jpeg")
-      .jpeg({ quality: 95 })
-      .toFile(`uploads/products/${imageCoverFilename}`);
+      await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333)
+        .toFormat("jpeg")
+        .jpeg({ quality: 95 })
+        .toFile(`uploads/products/${imageCoverFilename}`);
 
-    // save image in our db
-    req.body.imageCover = imageCoverFilename;
-  }
-  //1) image proccesing for images
-  if (req.files.images) {
-    req.body.images = [];
-    await Promise.all(
-      req.files.images.map(async (img, index) => {
-        const imageName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
+      req.body.imageCover = imageCoverFilename;
+    }
 
-        await sharp(img.buffer)
-          .resize(2000, 1333)
-          .toFormat("jpeg")
-          .jpeg({ quality: 95 })
-          .toFile(`uploads/products/${imageName}`);
+    if (req.files && req.files.images) {
+      // Process images
+      req.body.images = [];
+      await Promise.all(
+        req.files.images.map(async (img, index) => {
+          const imageName = `product-${uuidv4()}-${Date.now()}-${
+            index + 1
+          }.jpeg`;
 
-        // save image in our db
-        req.body.images.push(imageName);
-      })
-    );
+          await sharp(img.buffer)
+            .resize(2000, 1333)
+            .toFormat("jpeg")
+            .jpeg({ quality: 95 })
+            .toFile(`uploads/products/${imageName}`);
+
+          req.body.images.push(imageName);
+        })
+      );
+    }
+
+    // Call next middleware or route handler
     next();
+  } catch (error) {
+    // Handle any errors
+    next(error); // Pass error to Express error handler
   }
 });
 
@@ -70,7 +79,7 @@ exports.getProducts = Factory.getAll(productModel);
 // @Desc      get specific Products by id
 // @route     /api/v1/Products/:id
 // @Access    Public
-exports.getProduct = Factory.getOne(productModel, "reviews");
+exports.getProduct = Factory.getOne(productModel, "reviews brand category");
 
 // @Desc      Exporting the postProducts function
 // @route     POST   /api/v1/Products

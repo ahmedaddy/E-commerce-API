@@ -4,9 +4,9 @@ const express = require("express");
 // eslint-disable-next-line import/no-extraneous-dependencies, node/no-unpublished-require
 const dotenv = require("dotenv");
 const morgan = require("morgan");
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 const cors = require("cors");
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 const compression = require("compression");
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -29,17 +29,6 @@ const globalError = require("./middlewares/errMiddleware");
 // Establish database connection
 const dbConnection = require("./config/database");
 
-// const categoryRoute = require("./Routes/categorieRoutes");
-// const subCategoryRoute = require("./Routes/subCategoryRoutes");
-// const brandRoute = require("./Routes/brandRoutes");
-// const productRoute = require("./Routes/productRoutes");
-// const userRoute = require("./Routes/userRoutes");
-// const authRoute = require("./Routes/authRoutes");
-// const reviewRoute = require("./Routes/reviewRoutes");
-// const wishList = require("./Routes/wishlistRoute");
-// const addresses = require("./Routes/addressesRoute");
-// const couponRoute = require("./Routes/couponRoutes");
-
 // Mount Routers ==================================================>
 const mountRoutes = require("./Routes/index");
 const { webhookCheckout } = require("./controllers/orderController");
@@ -47,10 +36,14 @@ const { webhookCheckout } = require("./controllers/orderController");
 dbConnection();
 
 const app = express();
-app.use(helmet());
-// enable outher domains to access your application
 app.use(cors());
-
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
+app.use(express.json({ limit: "5mb" }));
+// enable outher domains to access your application
 app.use(compression());
 
 // checkout webhook
@@ -114,7 +107,6 @@ const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
   console.log(`listening on port ${PORT}`);
 });
-
 // Events => listen => callBack(err)
 // Handle rejictions outside express
 process.on("unhandledRejection", (err) => {

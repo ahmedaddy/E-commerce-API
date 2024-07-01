@@ -18,6 +18,7 @@ const brandSchema = new mongoose.Schema(
 
   { timestamps: true }
 );
+
 const setImageURL = (doc) => {
   // return image base url + image name
   if (doc.image) {
@@ -25,12 +26,15 @@ const setImageURL = (doc) => {
     doc.image = imgURL;
   }
 };
+
 // findone, findall and update
 brandSchema.post("init", (doc) => {
   setImageURL(doc);
 });
+
 // create
 brandSchema.post("save", (doc) => {
   setImageURL(doc);
 });
+
 module.exports = mongoose.model("Brand", brandSchema);

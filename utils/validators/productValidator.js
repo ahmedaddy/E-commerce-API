@@ -138,10 +138,7 @@ exports.updateProductValidator = [
       req.body.slug = slugify(val);
       return true;
     }),
-  body("title").custom((val, { req }) => {
-    req.body.slug = slugify(val);
-    return true;
-  }),
+
   validatorMiddleware,
 ];
 exports.deleteProductValidator = [

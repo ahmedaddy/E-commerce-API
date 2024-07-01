@@ -81,7 +81,7 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
       new ApiError(`Not Found User For This ID : ${req.params.id}`, 404)
     );
   }
-  res.status(200).json({ success: true, data: document });
+  res.status(200).json({ success: true, data: sanitizeUser(document) });
 });
 
 exports.changeUserPassword = asyncHandler(async (req, res, next) => {

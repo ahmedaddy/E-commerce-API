@@ -56,7 +56,7 @@ const productSchema = new mongoose.Schema(
     ],
     brand: {
       type: mongoose.Types.ObjectId,
-      ref: "brand",
+      ref: "Brand",
     },
     ratingsAverage: {
       type: Number,
@@ -89,12 +89,18 @@ productSchema.pre(/^find/, function (next) {
   next();
 });
 
+productSchema.pre(/^find/, function (next) {
+  this.populate({ path: "brand", select: "name -_id" });
+  next();
+});
+
 const setImageURL = (doc) => {
   // return image base url + image name
   if (doc.imageCover) {
     const imgURL = `${process.env.BASE_URL}/products/${doc.imageCover}`;
     doc.imageCover = imgURL;
   }
+
   if (doc.images) {
     const imagesList = [];
     doc.images.forEach((image) => {

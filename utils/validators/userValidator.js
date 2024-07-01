@@ -106,13 +106,22 @@ exports.updateLoggedUserValidator = [
     .withMessage("Email Required")
     .isEmail()
     .withMessage("Invalid Email Address")
-    .custom((val) =>
-      userModel.findOne({ email: val }).then((user) => {
-        if (user) {
-          return Promise.reject(new Error("E-mail already used"));
+    .custom((val, { req }) => {
+      return userModel.findOne({ _id: req.user._id }).then((currentUser) => {
+        if (currentUser.email === val) {
+          // The user is updating their email to the same email they already have
+          return Promise.resolve();
+        } else {
+          // Check if the email is already in use by another user
+          return userModel.findOne({ email: val }).then((user) => {
+            if (user) {
+              return Promise.reject(new Error("E-mail already used"));
+            }
+            return Promise.resolve();
+          });
         }
-      })
-    ),
+      });
+    }),
   check("phone")
     .optional()
     .isMobilePhone(["ar-MA", "ar-EG"])

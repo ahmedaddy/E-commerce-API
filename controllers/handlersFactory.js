@@ -52,12 +52,14 @@ exports.getOne = (Model, populationOpt) =>
     if (populationOpt) {
       query = query.populate(populationOpt);
     }
+
     // 2) excute query
     const document = await query;
 
     if (!document) {
       return next(new ApiError(`Not Found Document For This ID : ${id}`, 404));
     }
+
     res.status(200).json({ success: true, data: document });
   });
 

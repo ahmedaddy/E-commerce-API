@@ -4,6 +4,8 @@ const ApiError = require("../utils/apiError");
 const Product = require("../models/productModel");
 const Cart = require("../models/cartModel");
 const Coupon = require("../models/couponModel");
+const productModel = require("../models/productModel");
+const apiError = require("../utils/apiError");
 
 const calcTotalPrice = (cart) => {
   let totalPrice = 0;
@@ -32,21 +34,39 @@ exports.addProductToCart = asyncHandler(async (req, res, next) => {
       cartItems: [{ product: productId, color, price: product.price }],
     });
   } else {
-    // product exist in cart, update product quantity
-
-    const productIndex = cart.cartItems.findIndex(
-      (item) => item.product.toString() === productId && item.color === color
+    // Check if the product with the same color already exists in the cart
+    const existingCartItemIndex = cart.cartItems.findIndex(
+      (item) =>
+        item.product._id.toString() === productId && item.color === color
     );
 
-    if (productIndex > -1) {
-      const cartItem = cart.cartItems[productIndex];
-      cartItem.quantity += 1;
+    console.log(existingCartItemIndex);
 
-      cart.cartItems[productIndex] = cartItem;
-    } else {
-      // product not exist in cart, push product to cart items
-      cart.cartItems.push({ product: productId, color, price: product.price });
+    if (existingCartItemIndex !== -1) {
+      return next(
+        new ApiError(
+          "Product with the same color already exists in the cart",
+          400
+        )
+      );
     }
+
+    // Product not existing in cart, push product to cart items
+    cart.cartItems.push({ product: productId, color, price: product.price });
+
+    // // product exist in cart, update product quantity
+    // const existingCartItemIndex = cart.cartItems.findIndex(
+    //   (item) => item.product.toString() === productId && item.color === color
+    // );
+    // if (productIndex > -1) {
+    //   const cartItem = cart.cartItems[productIndex];
+    //   cartItem.quantity += 1;
+
+    //   cart.cartItems[productIndex] = cartItem;
+    // cart.cartItems.push({ product: productId, color, price: product.price });
+    // else {
+    // product not exist in cart, push product to cart items
+    // }
   }
 
   // calculate total cart price
@@ -67,11 +87,17 @@ exports.addProductToCart = asyncHandler(async (req, res, next) => {
 // @Access    private/User
 exports.getLoggedUserCart = asyncHandler(async (req, res, next) => {
   const cart = await Cart.findOne({ user: req.user._id });
+  //   .populate({
+  //   path: "cartItems.product",
+  //   model: productModel,
+  // });
+
   if (!cart) {
     return next(
       new ApiError(`there is no cart for this user id :${req.user._id}`, 404)
     );
   }
+
   res.status(200).json({
     status: "success",
     numberOfCartItems: cart.cartItems.length,
@@ -173,6 +199,8 @@ exports.applyCoupon = asyncHandler(async (req, res, next) => {
   ).toFixed(2); // 22.57
 
   cart.totalPriceAfterDiscount = totalPriceAfterDiscount;
+
+  cart.coupon = req.body.coupon;
 
   await cart.save();
 

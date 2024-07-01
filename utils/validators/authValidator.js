@@ -14,7 +14,11 @@ exports.signupValidator = [
       req.body.slug = slugify(val);
       return true;
     }),
-
+  check("phone")
+    .notEmpty()
+    .withMessage("Phone Required")
+    .isMobilePhone(["ar-MA"])
+    .withMessage("accept only morrocan phone numbers"),
   check("email")
     .notEmpty()
     .withMessage("Email Required")
@@ -46,16 +50,8 @@ exports.signupValidator = [
   validatorMiddleware,
 ];
 exports.loginValidator = [
-  check("email")
-    .notEmpty()
-    .withMessage("Email Required")
-    .isEmail()
-    .withMessage("Invalid Email Address"),
+  check("email").notEmpty().withMessage("Incorrect email or password"),
+  check("password").notEmpty().withMessage("Incorrect email or password"),
 
-  check("password")
-    .notEmpty()
-    .withMessage("Password Required")
-    .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters"),
   validatorMiddleware,
 ];

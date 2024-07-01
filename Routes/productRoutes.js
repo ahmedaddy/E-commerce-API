@@ -24,6 +24,7 @@ const router = express.Router();
 // POST        /products/dsafdasfklgdf514/reviews
 // GET         /products/dsafdasfklgdf514/reviews
 // GET         /products/dsafdasfklgdf514/reviews/poidfsaoipasdlk;kj
+
 router.use("/:productId/reviews", reviewsRoute);
 
 // postCategories
