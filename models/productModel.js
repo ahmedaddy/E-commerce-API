@@ -42,7 +42,9 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "Product Image cover is required"],
     },
+    imageCoverBase64: [String],
     images: [String],
+    imagesBase64: [String],
     category: {
       type: mongoose.Types.ObjectId,
       ref: "category",
@@ -85,12 +87,12 @@ productSchema.virtual("reviews", {
 
 // mongoose query midelware
 productSchema.pre(/^find/, function (next) {
-  this.populate({ path: "category", select: "name -_id" });
+  this.populate({ path: "category", select: "name " });
   next();
 });
 
 productSchema.pre(/^find/, function (next) {
-  this.populate({ path: "brand", select: "name -_id" });
+  this.populate({ path: "brand", select: "name " });
   next();
 });
 
@@ -112,9 +114,9 @@ const setImageURL = (doc) => {
 };
 
 // findone, findall and update
-productSchema.post("init", (doc) => {
-  setImageURL(doc);
-});
+// productSchema.post("init", (doc) => {
+//   setImageURL(doc);
+// });
 
 // create
 productSchema.post("save", (doc) => {

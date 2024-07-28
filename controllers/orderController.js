@@ -131,13 +131,52 @@ exports.updateOrderToDelivered = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc      This webhook will run when stripe payment success paid
+// @route     GET  /checkout-session
+// @Access    Private - User
+const createCartOrder = async (session) => {
+  const cartId = session.client_reference_id;
+  const shippingAddress = session.metadata;
+  const orderPrice = session.amount_total / 100;
+
+  const cart = await Cart.findById(cartId);
+  const user = await User.findOne({ email: session.customer_email });
+
+  // create order
+  // 3 - create order with cash payment method (default)
+  const order = await Order.create({
+    user: user._id,
+    cartItems: cart.cartItems,
+    shippingAddress,
+    totalOrderPrice: orderPrice,
+    isPaid: true,
+    paidAt: Date.now(),
+    paymentMethodType: "card",
+  });
+
+  // 4 - after creating order, decrement product quantity and increment product sold
+  if (order) {
+    const bulkOption = cart.cartItems.map((item) => ({
+      updateOne: {
+        filter: { _id: item.product },
+        update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
+      },
+    }));
+    await Product.bulkWrite(bulkOption, {});
+    // 5 - clear cart depend on cartId
+
+    await Cart.findByIdAndDelete(cartId);
+  }
+};
+
+
 // @desc      GET checkout SESSION from STRIPE and send it as a response
 // @route     GET  /api/v1/orders/checkout-session/:cartId
 // @Access    Private - User
 exports.checkoutSession = asyncHandler(async (req, res, next) => {
   // app settings
-  const taxPrice = 15;
-  const shippingPrice = 10;
+  const taxPrice = 0;
+  const shippingPrice = 0;
 
   // 1 - get Cart by id
   const cart = await Cart.findById(req.params.cartId);
@@ -182,43 +221,6 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
   });
 });
 
-// @desc      This webhook will run when stripe payment success paid
-// @route     GET  /checkout-session
-// @Access    Private - User
-const createCartOrder = async (session) => {
-  const cartId = session.client_reference_id;
-  const shippingAddress = session.metadata;
-  const orderPrice = session.amount_total / 100;
-
-  const cart = await Cart.findById(cartId);
-  const user = await User.findOne({ email: session.customer_email });
-
-  // create order
-  // 3 - create order with cash payment method (default)
-  const order = await Order.create({
-    user: user._id,
-    cartItems: cart.cartItems,
-    shippingAddress,
-    totalOrderPrice: orderPrice,
-    isPaid: true,
-    paidAt: Date.now(),
-    paymentMethodType: "card",
-  });
-
-  // 4 - after creating order, decrement product quantity and increment product sold
-  if (order) {
-    const bulkOption = cart.cartItems.map((item) => ({
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
-      },
-    }));
-    await Product.bulkWrite(bulkOption, {});
-    // 5 - clear cart depend on cartId
-
-    await Cart.findByIdAndDelete(cartId);
-  }
-};
 
 exports.webhookCheckout = asyncHandler(async (req, res) => {
   const sig = req.headers["stripe-signature"];

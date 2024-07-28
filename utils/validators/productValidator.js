@@ -82,6 +82,8 @@ exports.createProductValidator = [
           _id: { $exists: true, $in: subCategoriesIds },
         })
         .then((result) => {
+          console.log(subCategoriesIds);
+          console.log(typeof subCategoriesIds);
           if (result.length < 1 || result.length !== subCategoriesIds.length) {
             return Promise.reject(
               new Error("Some IDs are invalid or not exist in the database")

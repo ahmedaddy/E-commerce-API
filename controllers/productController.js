@@ -25,22 +25,33 @@ exports.uploadProductImages = uploadMixOfImages([
     maxCount: 5,
   },
 ]);
+const convertBufferToBase64 = (buffer) => {
+  return buffer.toString("base64");
+};
 
 exports.resizeProductImages = asyncHandler(async (req, res, next) => {
   // console.log(req.files);
   // 1) image proccesing for image cover
+  // Initialize arrays if not already present
+  req.body.imagesBase64 = [];
   try {
     if (req.files && req.files.imageCover) {
       // Process image cover
       const imageCoverFilename = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
 
       await sharp(req.files.imageCover[0].buffer)
-        .resize(2000, 1333)
+        .resize(405, 720)
         .toFormat("jpeg")
         .jpeg({ quality: 95 })
         .toFile(`uploads/products/${imageCoverFilename}`);
 
+      const imageCoverBase64 = convertBufferToBase64(
+        req.files.imageCover[0].buffer
+      );
+      // console.log(`data:image/jpeg;base64,${imageCoverBase64}`);
+
       req.body.imageCover = imageCoverFilename;
+      // req.body.imageCoverBase64 = `data:image/jpeg;base64,${imageCoverBase64}`;
     }
 
     if (req.files && req.files.images) {
@@ -53,12 +64,16 @@ exports.resizeProductImages = asyncHandler(async (req, res, next) => {
           }.jpeg`;
 
           await sharp(img.buffer)
-            .resize(2000, 1333)
+            .resize(405, 720)
             .toFormat("jpeg")
             .jpeg({ quality: 95 })
             .toFile(`uploads/products/${imageName}`);
 
           req.body.images.push(imageName);
+          // Convert the image buffer to a base64 string
+          // const imageBase64 = convertBufferToBase64(img.buffer);
+          // const imageBase64String = `data:image/jpeg;base64,${imageBase64}`;
+          // req.body.imagesBase64.push(imageBase64String);
         })
       );
     }

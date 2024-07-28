@@ -9,6 +9,9 @@ const cors = require("cors");
 
 const compression = require("compression");
 
+const punycode = require('punycode/');
+
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 const hpp = require("hpp");
 
