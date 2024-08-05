@@ -169,7 +169,6 @@ const createCartOrder = async (session) => {
   }
 };
 
-
 // @desc      GET checkout SESSION from STRIPE and send it as a response
 // @route     GET  /api/v1/orders/checkout-session/:cartId
 // @Access    Private - User
@@ -220,7 +219,6 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
     session,
   });
 });
-
 
 exports.webhookCheckout = asyncHandler(async (req, res) => {
   const sig = req.headers["stripe-signature"];

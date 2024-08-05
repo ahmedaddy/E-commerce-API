@@ -52,7 +52,7 @@ app.use(compression());
 
 // checkout webhook
 app.post(
-  "/webhook-checkout",
+  "/checkout-session",
   bodyParser.raw({ type: "application/json" }),
   webhookCheckout
 );
