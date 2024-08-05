@@ -141,7 +141,8 @@ const createCartOrder = async (session) => {
 
   const cart = await Cart.findById(cartId);
   const user = await User.findOne({ email: session.customer_email });
-
+  console.log(cart);
+  console.log(user);
   // create order
   // 3 - create order with cash payment method (default)
   const order = await Order.create({
@@ -220,6 +221,9 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc      This WebHook will run when stripe payment success paid
+// @route     GET  /webhook-checkout
+// @Access    Private - User
 exports.webhookCheckout = asyncHandler(async (req, res) => {
   const sig = req.headers["stripe-signature"];
 
@@ -237,6 +241,8 @@ exports.webhookCheckout = asyncHandler(async (req, res) => {
 
   // Handle the event
   if (event.type === "checkout.session.completed") {
+    console.log(event.data.object);
+    console.log("check out session competed");
     // create order
     createCartOrder(event.data.object);
   }
