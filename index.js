@@ -1,6 +1,8 @@
 const path = require("path");
 // Import required modules
 const express = require("express");
+const bodyParser = require("body-parser");
+
 // eslint-disable-next-line import/no-extraneous-dependencies, node/no-unpublished-require
 const dotenv = require("dotenv");
 const morgan = require("morgan");
@@ -9,8 +11,7 @@ const cors = require("cors");
 
 const compression = require("compression");
 
-const punycode = require('punycode/');
-
+const punycode = require("punycode/");
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const hpp = require("hpp");
@@ -52,7 +53,7 @@ app.use(compression());
 // checkout webhook
 app.post(
   "/webhook-checkout",
-  express.raw({ type: "application/json" }),
+  bodyParser.raw({ type: "application/json" }),
   webhookCheckout
 );
 
