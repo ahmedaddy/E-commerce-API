@@ -41,7 +41,7 @@ exports.resizeProductImages = asyncHandler(async (req, res, next) => {
 
       await sharp(req.files.imageCover[0].buffer)
         .resize(405, 720)
-        .toFormat("jpeg")
+        .toFormat("webp")
         .jpeg({ quality: 95 })
         .toFile(`uploads/products/${imageCoverFilename}`);
 
@@ -89,7 +89,7 @@ exports.resizeProductImages = asyncHandler(async (req, res, next) => {
 // @desc      get gatProducts
 // @route     /api/v1/Products
 // @Access    Public
-exports.getProducts = Factory.getAll(productModel);
+exports.getProducts = Factory.getAll(productModel, (modelName = "products"));
 
 // @Desc      get specific Products by id
 // @route     /api/v1/Products/:id

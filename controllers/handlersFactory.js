@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
+const mongoose = require("mongoose");
 
 exports.deleteOne = (Model) =>
   asyncHandler(async (req, res, next) => {
@@ -66,10 +67,68 @@ exports.getOne = (Model, populationOpt) =>
 exports.getAll = (Model, modelName = "") =>
   asyncHandler(async (req, res) => {
     let filter = {};
+
+    // Merge with additional filters if they exist
     if (req.filterObj) {
-      filter = req.filterObj;
+      filter = { ...filter, ...req.filterObj };
     }
-    const documentCounts = await Model.countDocuments();
+    if (modelName === "products") {
+      // Extract category filter
+      const categoryFilter = req.query.category;
+      const brandFilter = req.query.brand;
+
+      if (categoryFilter) {
+        try {
+          // If categoryFilter.in is present, handle as an array; otherwise, handle as a single value
+          const categoryIds = Array.isArray(categoryFilter.in)
+            ? categoryFilter.in
+            : [categoryFilter.in || categoryFilter]; // Support both .in and direct category query
+
+          // Convert category IDs to ObjectId
+          const objectIds = categoryIds.map((id) => {
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+              throw new Error(`Invalid ObjectId: ${id}`);
+            }
+            return new mongoose.Types.ObjectId(id);
+          });
+
+          // Apply category filter (either as a single ObjectId or with $in for multiple)
+          filter.category =
+            objectIds.length === 1 ? objectIds[0] : { $in: objectIds };
+        } catch (err) {
+          // Handle conversion errors
+          console.error("Error converting category ID to ObjectId:", err);
+          return res.status(400).json({ error: "Invalid category ID" });
+        }
+      }
+      if (brandFilter) {
+        try {
+          // If categoryFilter.in is present, handle as an array; otherwise, handle as a single value
+          const brandIds = Array.isArray(brandFilter.in)
+            ? brandFilter.in
+            : [brandFilter.in || brandFilter]; // Support both .in and direct category query
+
+          // Convert category IDs to ObjectId
+          const objectIds = brandIds.map((id) => {
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+              throw new Error(`Invalid ObjectId: ${id}`);
+            }
+            return new mongoose.Types.ObjectId(id);
+          });
+
+          // Apply category filter (either as a single ObjectId or with $in for multiple)
+          filter.brand =
+            objectIds.length === 1 ? objectIds[0] : { $in: objectIds };
+        } catch (err) {
+          // Handle conversion errors
+          console.error("Error converting category ID to ObjectId:", err);
+          return res.status(400).json({ error: "Invalid category ID" });
+        }
+      }
+    }
+    // Count documents with the applied filter
+    const documentCounts = await Model.countDocuments(filter);
+
     // Build Query
     const apiFeatures = new ApiFeatures(Model.find(filter), req.query)
       .pagination(documentCounts)
@@ -78,7 +137,7 @@ exports.getAll = (Model, modelName = "") =>
       .filter()
       .limitFields();
 
-    // Excute Query
+    // Execute Query
     const { mongooseQuery, paginationResult } = apiFeatures;
     const document = await mongooseQuery;
 

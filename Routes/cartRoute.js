@@ -9,6 +9,7 @@ const {
   updateCartItemQuantity,
   applyCoupon,
 } = require("../controllers/cartController");
+const { createCartValidator } = require("../utils/validators/cartValidator");
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ router.use(authcontroller.protect, authcontroller.allowedTo("user"));
 // postBrands
 router
   .route("/")
-  .post(addProductToCart)
+  .post(createCartValidator, addProductToCart)
   .get(getLoggedUserCart)
   .delete(clearCart);
 

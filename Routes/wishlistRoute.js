@@ -13,13 +13,20 @@ const {
 
 const router = express.Router();
 
-router.use(authcontroller.protect, authcontroller.allowedTo("user"));
+// router.use(authcontroller.protect, authcontroller.allowedTo("user"));
+router.use(authcontroller.protect);
 
 router
   .route("/")
-  .post(createWishListValidator, addProductToWishlist)
+  .post(
+    authcontroller.allowedTo("user"),
+    createWishListValidator,
+    addProductToWishlist
+  )
   .get(getProductFromWishlist);
 
-router.route("/:productId").delete(RemoveProductFromWishlist);
+router
+  .route("/:productId")
+  .delete(authcontroller.allowedTo("user"), RemoveProductFromWishlist);
 
 module.exports = router;

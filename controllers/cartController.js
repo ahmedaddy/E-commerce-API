@@ -24,6 +24,11 @@ exports.addProductToCart = asyncHandler(async (req, res, next) => {
   const { productId, color } = req.body;
   const product = await Product.findById(productId);
 
+  // Check if the product is available
+  if (!product || product.quantity <= 0) {
+    return res.status(400).json({ message: "Product is out of stock" });
+  }
+
   // 1- get Cart for logged user
   let cart = await Cart.findOne({ user: req.user._id });
 
