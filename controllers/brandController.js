@@ -15,12 +15,12 @@ exports.uploadCategoryImage = uploadSingleImage("image");
 
 // image resize processing
 exports.resizeImage = asyncHandler(async (req, res, next) => {
-  const filename = `brand-${uuidv4()}-${Date.now()}.jpeg`;
+  const filename = `brand-${uuidv4()}-${Date.now()}.webp`;
   if (req.file) {
     await sharp(req.file.buffer)
-      .resize(600, 600)
-      .toFormat("jpeg")
-      .jpeg({ quality: 95 })
+      // .resize(300, 300)
+      .toFormat("webp")
+      .webp({ quality: 60 })
       .toFile(`uploads/brands/${filename}`);
 
     // save image in our db

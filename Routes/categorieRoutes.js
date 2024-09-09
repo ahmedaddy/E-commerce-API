@@ -31,7 +31,7 @@ router
   .route("/")
   .post(
     authcontroller.protect,
-    authcontroller.allowedTo("manager", "admin"), // only admin and manager can add category
+    authcontroller.allowedTo("manager", "admin"),
     uploadCategoryImage,
     resizeImage,
     createCategoryValidator,

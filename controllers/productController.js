@@ -37,12 +37,12 @@ exports.resizeProductImages = asyncHandler(async (req, res, next) => {
   try {
     if (req.files && req.files.imageCover) {
       // Process image cover
-      const imageCoverFilename = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
+      const imageCoverFilename = `product-${uuidv4()}-${Date.now()}-cover.webp`;
 
       await sharp(req.files.imageCover[0].buffer)
-        .resize(405, 720)
+        // .resize(405, 720)
         .toFormat("webp")
-        .jpeg({ quality: 95 })
+        .webp({ quality: 60 })
         .toFile(`uploads/products/${imageCoverFilename}`);
 
       const imageCoverBase64 = convertBufferToBase64(
@@ -61,12 +61,12 @@ exports.resizeProductImages = asyncHandler(async (req, res, next) => {
         req.files.images.map(async (img, index) => {
           const imageName = `product-${uuidv4()}-${Date.now()}-${
             index + 1
-          }.jpeg`;
+          }.webp`;
 
           await sharp(img.buffer)
-            .resize(405, 720)
-            .toFormat("jpeg")
-            .jpeg({ quality: 95 })
+            // .resize(405, 720)
+            .toFormat("webp")
+            .webp({ quality: 60 })
             .toFile(`uploads/products/${imageName}`);
 
           req.body.images.push(imageName);
