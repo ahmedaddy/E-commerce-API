@@ -30,7 +30,11 @@ const router = express.Router();
 router.use(authcontroller.protect);
 
 router.get("/getMe", getLoggedUserData, getUser);
-router.put("/changeMyPassword", updateLoggedUserPassword);
+router.put(
+  "/changeMyPassword",
+
+  updateLoggedUserPassword
+);
 router.put("/updateMe", updateLoggedUserValidator, updateLoggedUserData);
 router.put("/deleteMe", deleteLoggedUserData);
 

@@ -193,7 +193,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   }
   // 2) if user exist, Generate hash reset random 6 digits and save it in db
   const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-
+  console.log(resetCode);
   const hashedResetCode = crypto
     .createHash("sha256")
     .update(resetCode)
